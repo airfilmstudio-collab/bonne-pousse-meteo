@@ -1,0 +1,34 @@
+name: Prévisions Météo-France
+on:
+  schedule:
+    - cron: "40 4 * * *"
+    - cron: "40 10 * * *"
+    - cron: "40 16 * * *"
+    - cron: "40 22 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publication
+  cancel-in-progress: false
+jobs:
+  previsions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: bash fetch-site.sh
+      - run: python prevision.py site
+      - run: bash publish.sh "Prévisions $(date -u +%Y-%m-%dT%H:%MZ)"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Garder les tâches planifiées actives (un signe de vie par jour sur main)
+        if: github.event.schedule == '40 4 * * *'
+        run: |
+          date -u +%Y-%m-%dT%H:%MZ > derniere-mise-a-jour.txt
+          git -c user.name="bonne-pousse-bot" -c user.email="bonne-pousse-bot@users.noreply.github.com" commit -qam "Signe de vie" || true
+          git push -q || true
