@@ -81,7 +81,8 @@ def read(path, keep):
                 seen.add(f"{sn}|{nm}|{ty}|{lvl}")
                 kind = None
                 if sn in ("2t", "t2m") or (sn == "t" and ty == "heightAboveGround" and lvl == 2): kind = "t2m"
-                elif sn in ("tp", "tirf", "prate", "tpr") or "precipitation" in nm.lower(): kind = "rr"
+                elif sn == "tp" or nm.lower() == "total precipitation": kind = "rr"
+                elif sn == "tirf": kind = "rr_pluie"   # secours : pluie seule
                 if not kind: continue
                 w = window(gid)
                 vals = eccodes.codes_get_values(gid).reshape(w["nj"], w["ni"])
@@ -145,6 +146,10 @@ def main():
             seen = read(p, keep)
             if g == GROUPS[0]: log("  champs vus :", sorted(seen)[:40])
             if not SRC: os.remove(p)
+    if not keep.get("rr") and keep.get("rr_pluie"): keep["rr"] = keep["rr_pluie"]
+    if keep.get("rr"):
+        tot = max(float(np.nanmax(g)) for a, b, g in keep["rr"])
+        log("  pluie : champ", "tp" if "rr_pluie" not in keep or keep["rr"] is not keep["rr_pluie"] else "tirf", "; pas", sorted({(a, b) for a, b, g in keep["rr"]})[:6], "; max", round(tot, 1), "mm")
     if not keep.get("t2m") or not keep.get("rr"):
         raise RuntimeError("Température ou pluie introuvable dans SP1 : " + str(list(keep)))
     days, hourly, shape, lats, lons = daily(run, keep)
