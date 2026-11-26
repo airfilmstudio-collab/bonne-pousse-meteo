@@ -1,0 +1,5 @@
+body{font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif;max-width:720px;margin:0 auto;padding:24px 18px 60px;color:#16324F;background:#F4F9FF;line-height:1.55}
+h1{font-size:28px;margin:.2em 0}h2{font-size:19px;margin-top:1.6em}a{color:#C2185B}
+.top{display:flex;gap:10px;align-items:center}.top b{font-size:22px}.top b span{color:#E8475F}
+.card{background:#fff;border:2px solid #D9E8F5;border-radius:18px;padding:14px 16px;margin:14px 0}
+small,.muted{color:#5A7189}footer{margin-top:40px;font-size:13px;color:#5A7189}
