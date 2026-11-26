@@ -144,7 +144,7 @@ def main():
         b = build(STN[k], STX[k], SRR.get(rrpick.get(k), {}))
         if not b: continue
         meta = LT[k]
-        obj = dict(v=1, id=k, nom=meta["nom"], lat=meta["lat"], lon=meta["lon"], alt=meta["alt"], y0=b["y0"], n=b["n"],
+        obj = dict(v=1, id=k, nom=meta["nom"], lat=meta["lat"], lon=meta["lon"], alt=meta["alt"], y0=b["y0"], n=b["n"], years=[int(y) for y in b["years"]],
                    tn=b["tn"], tx=b["tx"], pr=b["pr"], rr=b["rr"], rr_poste=rrpick.get(k), src="Météo-France, Séries Quotidiennes de Référence (Licence Ouverte 2.0)")
         json.dump(obj, open(os.path.join(OUT, "climat", "s", k + ".json"), "w"), separators=(",", ":"))
         idx.append(dict(id=k, nom=meta["nom"], lat=meta["lat"], lon=meta["lon"], alt=meta["alt"], y0=b["y0"], n=b["n"], rr=b["rr"]))
