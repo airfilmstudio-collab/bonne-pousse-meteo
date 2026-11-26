@@ -22,18 +22,19 @@ def get(name):
     r = requests.get(BASE + name, timeout=300); r.raise_for_status(); return r.content
 
 def listing(var):
+    """colonnes (dans l'ordre) : fichier ; num_poste ; nom ; latitude ; longitude ; altitude ; début ; fin ; ..."""
     txt = get(f"Liste_SQR_{var}_metro.csv").decode("utf-8-sig", errors="replace")
     rows = list(csv.reader(io.StringIO(txt), delimiter=";"))
-    head = [h.strip().lower() for h in rows[0]]
+    if rows: log(f"  liste {var} : {len(rows)} lignes, en-tête {rows[0][:6]}")
     out = {}
-    for r in rows[1:]:
-        if len(r) < 8: continue
-        d = dict(zip(head, r))
+    for r in rows:
+        if len(r) < 6: continue
         try:
-            out[d["num_poste"].strip()] = dict(file=d["nom_fichier"].strip(), nom=d["nom_usuel"].strip().title(),
-                lat=float(d["latitude(°)"]), lon=float(d["longitude(°)"]), alt=float(d["altitude(m)"] or 0))
-        except (KeyError, ValueError):
+            lat, lon = float(r[3].replace(",", ".")), float(r[4].replace(",", "."))
+            alt = float((r[5] or "0").replace(",", "."))
+        except ValueError:
             continue
+        out[r[1].strip()] = dict(file=r[0].strip(), nom=r[2].strip().title(), lat=lat, lon=lon, alt=alt)
     return out
 
 def parse(raw):
@@ -62,9 +63,11 @@ def parse(raw):
 def series(zipname, files):
     z = zipfile.ZipFile(io.BytesIO(get(zipname)))
     names = {os.path.basename(n): n for n in z.namelist()}
+    log(f"  {zipname} : {len(names)} fichiers, ex. {list(names)[:3]}")
+    low = {k.lower(): v for k, v in names.items()}
     out = {}; shown = False
     for num, f in files.items():
-        n = names.get(f)
+        n = names.get(f) or low.get(f.lower())
         if not n: continue
         raw = z.read(n)
         if not shown: log("  exemple", f, ":", raw[:160]); shown = True
